@@ -11,7 +11,8 @@ switch (command) {
   }
   case "update": {
     const { runUpdate } = await import("./commands/update.ts");
-    await runUpdate();
+    const force = args.includes("--force") || args.includes("-f");
+    await runUpdate({ force });
     break;
   }
   case "mcp": {
@@ -28,6 +29,7 @@ dunelin — scaffold and manage agentic workspaces
 Usage:
   dunelin init [name]    Set up a new workspace (interactive)
   dunelin update         Pull latest context from shadow repo
+  dunelin update --force Apply all changes without prompting
   dunelin mcp            Start the MCP server (stdio)
   dunelin --help         Show this help
 

@@ -2,7 +2,7 @@ import { readFile, writeFile } from "fs/promises";
 import { existsSync } from "fs";
 import type { WorkspaceConfig } from "./schemas.ts";
 
-const VERSION = "0.2.2";
+const VERSION = "0.2.3";
 const START_MARKER = "<!-- dunelin:start -->";
 const END_MARKER = "<!-- dunelin:end -->";
 
@@ -30,13 +30,26 @@ An MCP server is configured in \`.mcp.json\` — AI tools can query workspace st
 ## Context Persistence
 This workspace uses a **shadow repo** (\`.dunelin/shadow/\`) to version and share context via git.
 
+**Persistent (source of truth)** — always edit here, then commit + push + \`dunelin update\`:
+\`\`\`
+.dunelin/shadow/CLAUDE.md                        — workspace context
+.dunelin/shadow/projects/{name}/CLAUDE.md        — project context
+.dunelin/shadow/projects/{name}/HUMANS.md        — project team
+.dunelin/shadow/projects/{name}/changelog/       — decision log
+\`\`\`
+
+**Synced copies (read-only, overwritten by \`dunelin update\`):**
+\`\`\`
+/CLAUDE.md, /projects/{name}/CLAUDE.md, changelog/, HUMANS.md
+\`\`\`
+
 **When you update context files** (CLAUDE.md, HUMANS.md, changelog entries):
 1. Edit the file inside \`.dunelin/shadow/\` — this is the canonical copy
 2. Commit: \`cd .dunelin/shadow && git add -A && git commit -m "update context"\`
 3. Push: \`git push\`
-4. Run \`dunelin update\` to sync changes to workspace root
+4. Run \`dunelin update --force\` to sync changes to workspace root
 
-Never edit context files at workspace root directly — they get overwritten by \`dunelin update\`.
+**Never edit context files at workspace root directly** — they get overwritten by \`dunelin update\`.
 `;
   } else {
     block += `
@@ -50,16 +63,11 @@ To enable versioned context, recreate this workspace from a git template (\`dune
 ## Workspace Structure
 \`\`\`
 .dunelin/config.json              — workspace config (managed by dunelin)${hasShadow ? "\n.dunelin/shadow/                  — shadow repo (versioned context)" : ""}
-projects/{name}/CLAUDE.md         — project context
-projects/{name}/HUMANS.md         — project team
+projects/{name}/CLAUDE.md         — project context (synced from shadow)
+projects/{name}/HUMANS.md         — project team (synced from shadow)
 projects/{name}/dunelin.json      — project metadata (repos, status, tags)
-projects/{name}/changelog/        — decision log
-projects/{name}/repos/            — code repositories (cloned or linked)
-\`\`\`
-
-## Project Metadata (\`dunelin.json\`)
-\`\`\`json
-{ "name": "string", "description": "string", "status": "string", "repos": [{ "name": "string", "url": "git-url" }], "tags": ["string"] }
+projects/{name}/changelog/        — decision log (synced from shadow)
+projects/{name}/repos/            — code repositories (cloned or linked, local only)
 \`\`\`
 
 For full documentation: https://github.com/vaileamon/dunelin#readme

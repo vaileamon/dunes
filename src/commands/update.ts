@@ -12,7 +12,7 @@ import {
 } from "../lib/workspace.ts";
 import { injectDunelinBlock } from "../lib/block.ts";
 
-export async function runUpdate(): Promise<void> {
+export async function runUpdate(flags: { force?: boolean } = {}): Promise<void> {
   const workspacePath = process.cwd();
 
   p.intro("Dunelin Update");
@@ -26,7 +26,7 @@ export async function runUpdate(): Promise<void> {
 
   // Shadow workflow: pull + copy
   if (config.shadow && hasShadow(workspacePath)) {
-    await pullAndApply(workspacePath, config);
+    await pullAndApply(workspacePath, config, flags.force);
   }
 
   // Always refresh the dunelin block (matches current binary version)
@@ -43,7 +43,8 @@ export async function runUpdate(): Promise<void> {
 
 async function pullAndApply(
   workspacePath: string,
-  config: { updateIgnore?: string[] }
+  config: { updateIgnore?: string[] },
+  force = false
 ): Promise<void> {
   const shadowPath = getShadowPath(workspacePath);
 
@@ -77,38 +78,40 @@ async function pullAndApply(
     p.log.message(`  ${icon} ${change.path} (${change.type})`);
   }
 
-  const applyChoice = await p.select({
-    message: "Apply changes?",
-    options: [
-      { value: "all" as const, label: "Apply all" },
-      { value: "pick" as const, label: "Let me pick" },
-      { value: "skip" as const, label: "Skip" },
-    ],
-  });
-
-  if (p.isCancel(applyChoice) || applyChoice === "skip") {
-    p.log.info("File changes skipped.");
-    return;
-  }
-
   let filesToApply = changes.map((c) => c.path);
 
-  if (applyChoice === "pick") {
-    const selected = await p.multiselect({
-      message: "Which files to apply?",
-      options: changes.map((c) => ({
-        value: c.path,
-        label: `${c.path} (${c.type})`,
-      })),
-      required: false,
+  if (!force) {
+    const applyChoice = await p.select({
+      message: "Apply changes?",
+      options: [
+        { value: "all" as const, label: "Apply all" },
+        { value: "pick" as const, label: "Let me pick" },
+        { value: "skip" as const, label: "Skip" },
+      ],
     });
 
-    if (p.isCancel(selected) || (selected as string[]).length === 0) {
+    if (p.isCancel(applyChoice) || applyChoice === "skip") {
       p.log.info("File changes skipped.");
       return;
     }
 
-    filesToApply = selected as string[];
+    if (applyChoice === "pick") {
+      const selected = await p.multiselect({
+        message: "Which files to apply?",
+        options: changes.map((c) => ({
+          value: c.path,
+          label: `${c.path} (${c.type})`,
+        })),
+        required: false,
+      });
+
+      if (p.isCancel(selected) || (selected as string[]).length === 0) {
+        p.log.info("File changes skipped.");
+        return;
+      }
+
+      filesToApply = selected as string[];
+    }
   }
 
   const s2 = p.spinner();
