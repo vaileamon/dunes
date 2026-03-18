@@ -4,19 +4,19 @@
 
 AI coding agents discover context by harvesting files from your workspace. Dunes is a folder convention that makes this work across multiple projects — your agent reads the structure and immediately knows who you are, what you're building, and what decisions were made.
 
-No CLI. The AI harvest **is** the interface. You start your agent from the workspace root, it reads everything, and it knows.
+No CLI, no dependencies, no build step. The AI harvest **is** the interface — you start your agent from the workspace root, it reads everything, and it knows.
 
 ---
 
 ## Why This Exists
 
-Today's AI coding tools (Claude Code, Claude Workspace, OpenAI Codex, Google Jules, OpenClaw, Cursor, and more every week) discover context by harvesting files from your workspace. They look for `CLAUDE.md`, `.cursorrules`, and similar files and load them automatically. That's the only mechanism — there's no API to feed context, no way to say "read this before you start."
+AI coding tools discover context by harvesting files from your workspace. Claude Code, [OpenClaw](https://github.com/openclaw/openclaw), OpenAI Codex, Cursor, Google Jules — they all look for `CLAUDE.md` and similar files and load them automatically. That's the only mechanism. There's no API to feed context, no way to say "read this before you start."
 
-This works great for single projects. But if you manage multiple projects across multiple workers — agents on different machines, teammates, headless CI agents — the question becomes: **how do you organize context so everyone sees the full picture?**
+This works great for a single project. But when you manage multiple projects across multiple workers — agents on different machines, teammates, headless CI agents — the question becomes: **how do you organize context so everyone sees the full picture?**
 
-Dunes is a workaround. It structures your workspace so the harvester naturally finds everything it needs — who you are, what projects exist, how they're built, what decisions were made. It's an opinionated folder convention, nothing more.
+Dunes is a folder convention that solves this. It structures your workspace so the harvester naturally finds everything it needs — who you are, what projects exist, how they're built, what decisions were made.
 
-**This should eventually be unnecessary.** When AI tools ship proper features like `.claudeignore` (to control what the harvester sees), scoped context loading (load only what's relevant), or native multi-project support — the need for a convention like this shrinks. Until then, Dunes solves the problem with folders and markdown.
+**This should eventually be unnecessary.** When AI tools ship proper features like `.claudeignore` (to control what the harvester sees), scoped context loading, or native multi-project support — the need for a convention like this shrinks. Until then, Dunes solves the problem with folders and markdown.
 
 ---
 
@@ -50,7 +50,9 @@ my-workspace/
         └── repos/
 ```
 
-That's it. Create the folders, write the markdown, and **always start your AI agent from the workspace root.** The harvester walks down from where you launch it — starting from the root means it discovers the workspace CLAUDE.md first, then every dune's context below it.
+That's it. Create the folders, write the markdown.
+
+**The one rule: always start your AI agent from the workspace root.** The harvester walks the file tree from where you launch it. Start from the root and it discovers the workspace CLAUDE.md first, then every dune's context below it. Start from inside a repo and it only sees that repo — it misses who you are, what other projects exist, and every decision logged in changelogs. The workspace root is the entry point. Everything flows from there.
 
 ---
 
@@ -154,10 +156,10 @@ git clone git@github.com:you/your-repo.git
 
 ```bash
 cd ~/my-workspace
-claude  # or cursor, windsurf, etc.
+claude  # or openclaw, cursor, codex, etc.
 ```
 
-This is key — always launch from the workspace root, not from inside a project. The harvester walks the tree from where you start. From the root, it picks up everything: your identity, your projects, their context, their changelogs.
+Always from the root — never from inside a project. The harvester walks down from where you launch. From the root, it picks up everything: your identity, your projects, their context, their changelogs. From inside a repo, it only sees code.
 
 ---
 
@@ -172,7 +174,7 @@ The workspace (minus `repos/`) is lightweight markdown. Share it however you wan
 
 The convention doesn't care how files move between machines. It only cares that they're in the right place when your AI tool opens.
 
-> **How I use it:** I run multiple agent machines (laptop + Mac Mini with [OpenClaw](https://github.com/nichochar/open-claw)) and use [Syncthing](https://syncthing.net/) to keep the workspace in sync across all of them. Context files propagate in seconds, repos are excluded via `.stignore`. No git ceremony, no manual sync — edit a CLAUDE.md on any machine and every agent sees it immediately.
+> **How I use it:** I run multiple agent machines (laptop + Mac Mini with [OpenClaw](https://github.com/openclaw/openclaw)) and use [Syncthing](https://syncthing.net/) to keep the workspace in sync across all of them. Context files propagate in seconds, repos are excluded via `.stignore`. No git ceremony, no manual sync — edit a CLAUDE.md on any machine and every agent sees it immediately.
 
 ---
 

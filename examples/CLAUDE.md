@@ -25,7 +25,7 @@
 |------|----------|
 
 ## Dunes Convention
-This workspace follows the [Dunes](https://github.com/vaileamon/dunelin) convention. Structure:
+This workspace follows the [Dunes](https://github.com/vaileamon/dunes) convention. Structure:
 
 ```
 CLAUDE.md                          ← you are here (workspace context)
