@@ -2,17 +2,17 @@
 
 > Context accumulates like sand — shaped by wind, reshaped by work.
 
-Dunes is a convention for organizing AI agent workspaces. No CLI, no dependencies, no build step. Just a folder structure and markdown files that AI tools read natively.
+AI coding agents discover context by harvesting files from your workspace. Dunes is a folder convention that makes this work across multiple projects — your agent reads the structure and immediately knows who you are, what you're building, and what decisions were made.
 
-Your AI starts every session cold. Dunes gives it memory.
+No CLI. The AI harvest **is** the interface. You start your agent from the workspace root, it reads everything, and it knows.
 
 ---
 
 ## Why This Exists
 
-Today's AI coding tools (Claude Code, Cursor, Windsurf) discover context by harvesting files from your workspace. They look for `CLAUDE.md`, `.cursorrules`, and similar files and load them automatically. That's the only mechanism — there's no API to feed context, no way to say "read this before you start."
+Today's AI coding tools (Claude Code, Claude Workspace, OpenAI Codex, Google Jules, OpenClaw, Cursor, and more every week) discover context by harvesting files from your workspace. They look for `CLAUDE.md`, `.cursorrules`, and similar files and load them automatically. That's the only mechanism — there's no API to feed context, no way to say "read this before you start."
 
-This works great for single projects. But if you manage multiple projects, the question becomes: **how do you organize context so your AI sees the full picture?**
+This works great for single projects. But if you manage multiple projects across multiple workers — agents on different machines, teammates, headless CI agents — the question becomes: **how do you organize context so everyone sees the full picture?**
 
 Dunes is a workaround. It structures your workspace so the harvester naturally finds everything it needs — who you are, what projects exist, how they're built, what decisions were made. It's an opinionated folder convention, nothing more.
 
@@ -24,9 +24,9 @@ Dunes is a workaround. It structures your workspace so the harvester naturally f
 
 A dune isn't engineered. It forms naturally — grain by grain, shaped by wind and time. It shifts when conditions change. It's distinct, but part of a larger landscape.
 
-That's how project context works. You don't design it upfront. It accumulates through work — decisions made, architecture chosen, people involved, terms defined. Each project is its own dune: shaped by different forces, different terrain, but following the same physics.
+That's how project context works with AI agents. You don't design it upfront. It accumulates **grain by grain, iteration by iteration** — every session adds a decision, refines an architecture description, logs a pivot. An agent updates the CLAUDE.md after a deep refactor. Another drops a changelog entry after a strategy discussion. The context grows organically, shaped by actual work, not by someone sitting down to write documentation.
 
-A dune is also **visible from a distance**. An AI agent landing in your workspace should see the landscape immediately — what exists, what matters, where to look. That's what the convention provides: legibility at a glance.
+Each project is its own dune: shaped by different forces, different terrain, but following the same physics. A dune is also **visible from a distance**. An AI agent landing in your workspace should see the landscape immediately — what exists, what matters, where to look. That's what the convention provides: legibility at a glance.
 
 The workspace is the desert. Each project is a dune. The wind is you and your agents, reshaping context as you work.
 
@@ -50,7 +50,7 @@ my-workspace/
         └── repos/
 ```
 
-That's it. Create the folders, write the markdown, open your AI tool in the workspace root. It reads everything automatically.
+That's it. Create the folders, write the markdown, and **always start your AI agent from the workspace root.** The harvester walks down from where you launch it — starting from the root means it discovers the workspace CLAUDE.md first, then every dune's context below it.
 
 ---
 
@@ -150,14 +150,14 @@ cd dunes/my-project/repos
 git clone git@github.com:you/your-repo.git
 ```
 
-**5. Open in your AI tool:**
+**5. Start your agent from the workspace root:**
 
 ```bash
 cd ~/my-workspace
 claude  # or cursor, windsurf, etc.
 ```
 
-Your AI reads the CLAUDE.md files and knows everything.
+This is key — always launch from the workspace root, not from inside a project. The harvester walks the tree from where you start. From the root, it picks up everything: your identity, your projects, their context, their changelogs.
 
 ---
 
@@ -165,14 +165,14 @@ Your AI reads the CLAUDE.md files and knows everything.
 
 The workspace (minus `repos/`) is lightweight markdown. Share it however you want:
 
-- **Git** — make the workspace a repo, `.gitignore` the `repos/` folders. Push to GitHub. Your team clones it.
+- **Git** — push the workspace to GitHub. Your team clones it, then clones their repos separately into `repos/`.
 - **Syncthing** — real-time peer-to-peer sync between machines. Add `repos/` to `.stignore`. No cloud, no account.
 - **Dropbox/iCloud** — works if you can exclude `repos/` from sync.
 - **Just copy the files** — it's markdown.
 
 The convention doesn't care how files move between machines. It only cares that they're in the right place when your AI tool opens.
 
-> **How the author uses it:** I run multiple agent machines (laptop + Mac Mini with [OpenClaw](https://github.com/nichochar/open-claw)) and use [Syncthing](https://syncthing.net/) to keep the workspace in sync across all of them. Context files propagate in seconds, repos are excluded via `.stignore`. No git ceremony, no manual sync — edit a CLAUDE.md on any machine and every agent sees it immediately.
+> **How I use it:** I run multiple agent machines (laptop + Mac Mini with [OpenClaw](https://github.com/nichochar/open-claw)) and use [Syncthing](https://syncthing.net/) to keep the workspace in sync across all of them. Context files propagate in seconds, repos are excluded via `.stignore`. No git ceremony, no manual sync — edit a CLAUDE.md on any machine and every agent sees it immediately.
 
 ---
 
@@ -180,30 +180,21 @@ The convention doesn't care how files move between machines. It only cares that 
 
 This is the main technical challenge. AI tools harvest context by walking the file tree, typically respecting `.gitignore`. You want the harvester to read your CLAUDE.md files but **not** crawl into `repos/` (which contain node_modules, build artifacts, and thousands of irrelevant files).
 
-**Current workaround:** Make the workspace a git repo and gitignore the repos:
+**This mostly works out of the box.** Each repo inside `repos/` is its own git repository with its own `.gitignore`. The harvester walks into the repo, respects its `.gitignore`, and skips `node_modules/`, `dist/`, etc. The workspace itself is just files — it doesn't need to be a git repo, and it doesn't need its own `.gitignore`.
 
-```bash
-cd my-workspace
-git init
-echo "dunes/*/repos/" > .gitignore
-git add -A && git commit -m "init workspace"
-```
+**The remaining gap:** there's no way to tell the harvester "don't enter `repos/` at all." It still walks in and reads source code, which burns context tokens when you're just trying to have a workspace-level conversation. A dedicated `.claudeignore` file — respected by the harvester independently from git — would solve this. But that feature doesn't exist yet.
 
-The harvester respects `.gitignore` and skips `repos/`. Your context files are visible. Your code repos are not.
-
-**Why this is a workaround:** You're creating a git repo just to get a `.gitignore`. The workspace doesn't really need version control (that's what your code repos are for). A dedicated `.claudeignore` file — respected by the harvester independently from git — would make this unnecessary. But that feature doesn't exist yet.
-
-If your workspace IS already a git repo (e.g., you push context to GitHub for sharing), this isn't a workaround at all — it's just how it works.
+For now, this is a minor annoyance, not a blocker. The harvester reads your context files *and* some code. When you're working on a specific project, that code context is usually helpful anyway.
 
 ---
 
 ## FAQ
 
 **Do I need a CLI tool?**
-No. Dunes is just folders and files. Create them however you want.
+No. Your AI agent *is* the CLI. It reads the convention from the root CLAUDE.md, creates folders, writes changelogs, updates context files. You tell it "add a new dune for my-project" and it does it — no scaffolding tool needed. The convention is simple enough that any AI agent can follow it after reading the workspace context once.
 
 **Does it work with Cursor / Windsurf / other tools?**
-Yes. Rename `CLAUDE.md` to `.cursorrules` or whatever your tool reads. The convention is the same — only the filename changes.
+Yes. Most AI coding tools read `CLAUDE.md` natively at this point. The convention works as-is.
 
 **Can I nest dunes?**
 Keep it flat. One level of `dunes/project-name/` is enough. If a project is complex, add more detail to its CLAUDE.md rather than creating sub-dunes.
@@ -212,7 +203,7 @@ Keep it flat. One level of `dunes/project-name/` is enough. If a project is comp
 The convention still works as documentation for humans. But the real value comes from AI tools that auto-discover context files.
 
 **How is this different from just having a docs/ folder?**
-Placement and naming. AI tools look for specific files (CLAUDE.md, .cursorrules) in specific locations. Dunes puts context where AI tools expect to find it, following their native discovery patterns.
+It's not, really. Dunes is just an opinionated workflow — which files to create, where to put them, what to put in them. The value is that someone already thought about it so you don't have to.
 
 **Will this become obsolete?**
 Hopefully. If AI tools evolve to handle multi-project context natively — scoped loading, `.claudeignore`, project-aware harvesters — the convention becomes unnecessary. That's fine. Dunes is a pragmatic solution for today's constraints, not an architecture for the future.
@@ -229,8 +220,3 @@ See the [examples/](examples/) folder for starter templates:
 - `examples/dune/dune.json` — project metadata
 - `examples/dune/changelog/YYYY-MM-DD-example.md` — changelog entry
 
----
-
-## License
-
-MIT
