@@ -1,267 +1,238 @@
-# 💎 Dunelin
+# Dunes
 
-> **Beta** — Dunelin is under active development. Expect breaking changes.
+> Context accumulates like sand — shaped by wind, reshaped by work.
 
-Your AI tools start every session cold. No memory of your architecture, team, terms, or decisions. You repeat yourself endlessly.
+Dunes is a convention for organizing AI agent workspaces. No CLI, no dependencies, no build step. Just a folder structure and markdown files that AI tools read natively.
 
-Dunelin fixes this. It scaffolds an opinionated workspace with **context files** that AI tools read natively. Your AI agent knows everything from the first prompt.
-
-For teams, Dunelin goes further: a **shadow repo** versions and syncs context via git. Your team's knowledge stays current across every session, every machine, every tool.
-
-Works with Claude Code, Cursor, Windsurf, and any tool that reads context files.
+Your AI starts every session cold. Dunes gives it memory.
 
 ---
 
-## Quick Start
+## Why "Dunes"
 
-```bash
-dunelin init my-workspace
-```
+A dune isn't engineered. It forms naturally — grain by grain, shaped by wind and time. It shifts when conditions change. It's distinct, but part of a larger landscape.
 
-The interactive setup asks you to choose between a **built-in template** or a **custom git template**, then scaffolds the workspace. Open it in your editor — your AI tool reads the context automatically.
+That's how project context works. You don't design it upfront. It accumulates through work — decisions made, architecture chosen, people involved, terms defined. Each project is its own dune: shaped by different forces, different terrain, but following the same physics.
 
----
+A dune is also **visible from a distance**. An AI agent landing in your workspace should see the landscape immediately — what exists, what matters, where to look. That's what the convention provides: legibility at a glance.
 
-## Install
-
-Download the latest binary from [GitHub Releases](https://github.com/vaileamon/dunelin/releases/latest):
-
-**macOS (Apple Silicon):**
-```bash
-curl -L https://github.com/vaileamon/dunelin/releases/latest/download/dunelin-darwin-arm64 -o ~/.local/bin/dunelin && chmod +x ~/.local/bin/dunelin
-```
-
-**macOS (Intel):**
-```bash
-curl -L https://github.com/vaileamon/dunelin/releases/latest/download/dunelin-darwin-x64 -o ~/.local/bin/dunelin && chmod +x ~/.local/bin/dunelin
-```
-
-**Linux (x64):**
-```bash
-curl -L https://github.com/vaileamon/dunelin/releases/latest/download/dunelin-linux-x64 -o ~/.local/bin/dunelin && chmod +x ~/.local/bin/dunelin
-```
-
-No runtime dependencies. Single binary, no sudo.
-
-> **First time using `~/.local/bin`?** Create it and add it to your PATH:
-> ```bash
-> mkdir -p ~/.local/bin
-> echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc  # or ~/.bashrc
-> source ~/.zshrc
-> ```
-
-<details>
-<summary><strong>macOS: "cannot be opened" warning</strong></summary>
-
-macOS blocks unsigned binaries downloaded from the internet. Remove the quarantine flag:
-
-```bash
-xattr -d com.apple.quarantine ~/.local/bin/dunelin
-```
-</details>
+The workspace is the desert. Each project is a dune. The wind is you and your agents, reshaping context as you work.
 
 ---
 
-## How It Works
-
-### Context Files
-
-Dunelin generates structured markdown files that AI tools pick up automatically:
+## The Convention
 
 ```
 my-workspace/
-├── CLAUDE.md               ← workspace-wide context (you, your projects, terms)
-├── .mcp.json                ← MCP server config (auto-discovered by AI tools)
-├── .dunelin/
-│   └── config.json          ← workspace configuration
-└── projects/
-    └── my-project/
-        ├── CLAUDE.md        ← project context (architecture, stack, concepts)
-        ├── HUMANS.md        ← team members on this project
-        ├── dunelin.json     ← project metadata (repos, status, tags)
-        ├── changelog/       ← decision log, session summaries
-        └── repos/           ← cloned code repositories
+├── CLAUDE.md                    ← workspace context (you, your projects, terms)
+└── dunes/
+    ├── project-a/
+    │   ├── CLAUDE.md            ← project context (architecture, stack, decisions)
+    │   ├── HUMANS.md            ← who works on this
+    │   ├── dune.json            ← project metadata (repos, status, tags)
+    │   ├── changelog/           ← decision log, session summaries
+    │   └── repos/               ← code repositories (cloned, not managed)
+    └── project-b/
+        ├── CLAUDE.md
+        ├── dune.json
+        └── repos/
 ```
 
-Your AI tool reads these files at session start. No more explaining your codebase every time.
-
-### Shadow Repo
-
-When you create a workspace from a **git template**, Dunelin keeps the full clone inside `.dunelin/shadow/` — with `.git/` intact. This is the canonical, version-controlled copy of your context.
-
-```
-.dunelin/
-├── config.json
-└── shadow/                  ← git clone of your template
-    ├── .git/                ← full git history
-    ├── CLAUDE.md            ← AI edits here, commits, pushes
-    └── projects/
-        └── ...
-```
-
-**The workflow:**
-1. AI edits context files in `.dunelin/shadow/`
-2. AI commits and pushes
-3. Run `dunelin update` to sync changes to workspace root
-4. Your team pulls the same context on their machines
-
-This gives you **versioned, collaborative context** without making the workspace itself a git repo. Code repos under `projects/*/repos/` are untouched.
-
-No shadow? No problem. Workspaces from built-in templates work without git — just edit files directly.
+That's it. Create the folders, write the markdown, open your AI tool in the workspace root. It reads everything automatically.
 
 ---
 
-## CLI Reference
+## Files
 
-```
-dunelin — scaffold and manage agentic workspaces
+### `CLAUDE.md` (workspace root)
 
-Usage:
-  dunelin init [name]    Set up a new workspace (interactive)
-  dunelin update         Pull latest context from shadow repo
-  dunelin mcp            Start the MCP server (stdio)
-  dunelin --help         Show this help
-```
+The entry point. Your AI reads this first. It should contain:
 
-### `dunelin init [name]`
+- **Who you are** — name, role, company
+- **What projects exist** — table with name, description, status
+- **Shared terms** — vocabulary your AI needs to understand
+- **Tools & integrations** — what you use across projects
+- **People** — who's who, across all projects
+- **Preferences** — how you like to work with AI
 
-Interactive workspace setup. Two forms:
+This file also explains the Dunes convention to the AI, so it knows where to find project-specific context and how to maintain it.
 
-| Usage | Behavior |
-|-------|----------|
-| `dunelin init my-workspace` | Creates a `my-workspace/` folder and scaffolds inside it |
-| `dunelin init` | Scaffolds in the current directory (uses folder name as workspace name) |
+See [examples/CLAUDE.md](examples/CLAUDE.md) for a starter template.
 
-Two setup paths:
+### `CLAUDE.md` (per dune)
 
-**Built-in template** — Pick a template, fill in your name and role, choose your AI tool. Dunelin scaffolds the workspace with the correct context file format.
+Each dune has its own context file. Project-specific:
 
-**Git template** — Provide a git URL. Dunelin clones it as a shadow repo, copies files to workspace root, and offers to clone any code repos defined in project metadata.
+- **Overview** — what this project is, current status
+- **Architecture** — how it's built, key patterns
+- **Tech stack** — frameworks, languages, infrastructure
+- **Key concepts** — project-specific terms and domain language
+- **Dev commands** — how to run, test, deploy
 
-### `dunelin update`
+### `HUMANS.md`
 
-Pulls the latest context from the shadow repo and syncs to workspace root.
+Optional. Who works on this project, their roles, contact info. Useful when your AI needs to know who to reference in tickets or decisions.
 
-```
-$ dunelin update
+### `dune.json`
 
-Pulling latest context...
-  ✓ Pulled latest changes.
-
-Found 2 changes:
-  ~ CLAUDE.md (modified)
-  + projects/newproject/CLAUDE.md (added)
-
-? Apply changes?
-  > Apply all
-  > Let me pick
-  > Skip
-```
-
-Only available for workspaces created from a git template. Respects `updateIgnore` patterns in config (defaults to `**/repos`).
-
-### `dunelin mcp`
-
-Starts the MCP server over stdio. Not called directly — your AI tool invokes it automatically through `.mcp.json`.
-
-**Tools exposed:**
-
-| Tool | Input | Returns |
-|------|-------|---------|
-| `dunelin_get_workspace` | — | Root context file + project list |
-| `dunelin_get_project` | `{ project: string }` | Project context + team + metadata |
-| `dunelin_list_projects` | — | All projects with name, description, status, repos |
-
----
-
-## Templates
-
-### Built-in: Base
-
-The **Base** template ships with Dunelin. Generic — usable by anyone:
-
-```
-CLAUDE.md                          ← workspace context
-.mcp.json                          ← MCP auto-config
-.dunelin/config.json               ← workspace metadata
-projects/
-  example/                         ← example project (replace with your own)
-    CLAUDE.md
-    HUMANS.md
-    dunelin.json
-    changelog/
-```
-
-### Custom Git Templates
-
-Point `dunelin init` at any git repo containing a workspace structure:
-
-```bash
-dunelin init my-workspace
-# → select "Use a git template"
-# → paste: git@github.com:company/workspace-template.git
-```
-
-Dunelin clones the repo as a shadow, copies files to workspace root, and scans all `dunelin.json` files for a `repos` property. If found, it offers to clone those repos.
-
-This is how teams maintain their own opinionated workspace structures — specific projects, pre-configured context, repo references — while using Dunelin as the scaffolding engine.
-
----
-
-## Configuration
-
-### `.dunelin/config.json`
-
-```json
-{
-  "version": "0.2.0",
-  "contextFile": "CLAUDE.md",
-  "template": "base",
-  "templateUrl": null,
-  "shadow": false,
-  "updateIgnore": ["**/repos"],
-  "createdAt": "2026-02-18T00:00:00Z",
-  "updatedAt": "2026-02-18T00:00:00Z"
-}
-```
-
-| Field | Description |
-|-------|-------------|
-| `contextFile` | Name of the context file (`CLAUDE.md`, `.cursorrules`, or custom) |
-| `template` | Template used (`base`, `custom`) |
-| `templateUrl` | Git URL if a custom template was used |
-| `shadow` | Whether a shadow repo exists |
-| `updateIgnore` | Glob patterns for paths `dunelin update` should skip |
-
-### Project `dunelin.json`
+Project metadata. Not for AI context — for tooling and humans:
 
 ```json
 {
   "name": "my-project",
-  "description": "Financial data platform",
+  "description": "What this project does",
   "status": "active",
   "repos": [
     { "name": "api", "url": "git@github.com:company/api.git" },
     { "name": "web", "url": "git@github.com:company/web.git" }
   ],
-  "tags": ["consultancy"]
+  "tags": ["backend", "typescript"]
 }
 ```
 
+### `changelog/`
+
+Decision log. After significant work — features, architecture changes, strategy shifts — drop a markdown file:
+
+```
+changelog/
+  2026-03-04-auth-system-redesign.md
+  2026-03-09-messaging-first-pivot.md
+```
+
+Format: `YYYY-MM-DD-short-description.md` with sections: Context, What Was Done, Decisions Made, Open Questions.
+
+This is your AI's long-term memory across sessions. A new agent can read the changelog and understand *why* things are the way they are.
+
+### `repos/`
+
+Where code lives. Clone your repos here. These are heavy (node_modules, .git history, build artifacts) and should be invisible to the AI's context harvester.
+
+> **Note:** Today, most AI tools don't support ignoring specific folders during context harvesting. Until `.claudeignore` or equivalent exists, repos/ folders may need to be managed carefully. See [Limitations](#limitations).
+
 ---
 
-## Development
+## Getting Started
 
-Requires [Bun](https://bun.sh).
+**1. Create the workspace:**
 
 ```bash
-bun install
-bun run dev -- init my-test          # run dunelin init
-bun run dev -- update                # run dunelin update
-bun run dev -- mcp                   # run MCP server
-bun run build                        # compile to native binary
-bun run typecheck                    # type-check without emitting
+mkdir my-workspace && cd my-workspace
+mkdir -p dunes
 ```
+
+**2. Create the root context file:**
+
+```bash
+cp examples/CLAUDE.md ./CLAUDE.md
+# Edit with your info
+```
+
+**3. Add a project (dune):**
+
+```bash
+mkdir -p dunes/my-project/{changelog,repos}
+cp examples/dune/CLAUDE.md dunes/my-project/CLAUDE.md
+cp examples/dune/dune.json dunes/my-project/dune.json
+# Edit with your project info
+```
+
+**4. Clone your repos:**
+
+```bash
+cd dunes/my-project/repos
+git clone git@github.com:you/your-repo.git
+```
+
+**5. Open in your AI tool:**
+
+```bash
+cd ~/my-workspace
+claude  # or cursor, windsurf, etc.
+```
+
+Your AI reads the CLAUDE.md files and knows everything.
+
+---
+
+## Sharing Context
+
+The workspace (minus `repos/`) is lightweight markdown. Share it however you want:
+
+- **Git** — make the workspace a repo, `.gitignore` the `repos/` folders. Push to GitHub. Your team clones it. Your headless agents pull it.
+- **Syncthing** — real-time peer-to-peer sync between machines. Add `repos/` to `.stignore`.
+- **Dropbox/iCloud** — works if you can exclude `repos/` from sync.
+- **Just copy the files** — it's markdown. Email them if you want.
+
+The convention doesn't care how files move between machines. It only cares that they're in the right place when your AI tool opens.
+
+---
+
+## Sync with Git (recommended)
+
+The simplest setup for teams and multi-machine workflows:
+
+```bash
+cd my-workspace
+git init
+echo "dunes/*/repos/" > .gitignore
+git add -A && git commit -m "init workspace"
+git remote add origin git@github.com:you/workspace.git
+git push -u origin main
+```
+
+On another machine or agent:
+
+```bash
+git clone git@github.com:you/workspace.git
+cd workspace
+# Clone your project repos into dunes/*/repos/
+```
+
+Context files sync via git. Code repos are cloned separately into `repos/`. Clean separation.
+
+---
+
+## Limitations
+
+**Context harvesting and repos/ folders:**
+
+Most AI tools harvest context by walking the file tree, respecting `.gitignore`. If your workspace is a git repo and `repos/` is gitignored, the harvester skips it — which is what you want.
+
+If your workspace is NOT a git repo, the harvester may walk into `repos/` and burn tokens reading node_modules and build artifacts. In that case, making the workspace a git repo (even just for the `.gitignore`) solves it.
+
+A dedicated `.claudeignore` (or equivalent) would make this cleaner. Until then, the git repo approach works.
+
+---
+
+## FAQ
+
+**Do I need a CLI tool?**
+No. Dunes is just folders and files. Create them however you want.
+
+**Does it work with Cursor / Windsurf / other tools?**
+Yes. Rename `CLAUDE.md` to `.cursorrules` or whatever your tool reads. The convention is the same — only the filename changes.
+
+**Can I nest dunes?**
+Technically yes, but keep it flat. One level of `dunes/project-name/` is enough. If a project is complex, add more detail to its CLAUDE.md rather than creating sub-dunes.
+
+**What if my AI tool doesn't read CLAUDE.md?**
+The convention still works as documentation for humans. But the real value comes from AI tools that auto-discover context files.
+
+**How is this different from just having a docs/ folder?**
+Placement and naming. AI tools look for specific files (CLAUDE.md, .cursorrules) in specific locations. Dunes puts context where AI tools expect to find it, following their native discovery patterns.
+
+---
+
+## Examples
+
+See the [examples/](examples/) folder for starter templates:
+
+- `examples/CLAUDE.md` — workspace root context
+- `examples/dune/CLAUDE.md` — project context
+- `examples/dune/HUMANS.md` — team file
+- `examples/dune/dune.json` — project metadata
+- `examples/dune/changelog/YYYY-MM-DD-example.md` — changelog entry
 
 ---
 

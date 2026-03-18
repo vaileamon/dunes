@@ -1,0 +1,9 @@
+{
+  "name": "project-name",
+  "description": "What this project does",
+  "status": "active",
+  "repos": [
+    { "name": "app", "url": "git@github.com:you/app.git" }
+  ],
+  "tags": []
+}
