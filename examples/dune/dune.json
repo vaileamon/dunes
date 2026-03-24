@@ -5,5 +5,9 @@
   "repos": [
     { "name": "app", "url": "git@github.com:you/app.git" }
   ],
+  "people": [
+    { "name": "Alice", "role": "Developer & Team Lead", "team": "core" },
+    { "name": "Bob", "role": "Developer", "team": "core" }
+  ],
   "tags": []
 }

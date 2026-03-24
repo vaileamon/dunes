@@ -100,9 +100,16 @@ Project metadata. Not for AI context — for tooling and humans:
     { "name": "api", "url": "git@github.com:company/api.git" },
     { "name": "web", "url": "git@github.com:company/web.git" }
   ],
+  "people": [
+    { "name": "Alice", "role": "Developer & Team Lead", "team": "backend" },
+    { "name": "Bob", "role": "Developer", "team": "backend" },
+    { "name": "Carol", "role": "Product Owner" }
+  ],
   "tags": ["backend", "typescript"]
 }
 ```
+
+`people` is optional. Each entry has a `name` and `role`. The `team` field is optional — use it when the project has multiple teams working on it.
 
 ### `changelog/`
 
